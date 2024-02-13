@@ -20,8 +20,41 @@
 
 \title{Homework 1 Solutions}
 
-Collaborators:
+Collaborators: Aniketh Devarasetty, Janvi Patel, Boting Lu
 
-\section{Multiple Choice}
+\section{Image Pyramids}
+
+The Laplacian pytamids capture the residuals. Residuals are a result of an image minus the blurred image. Blurring an image is a low-pass filter, meaning it filters out some high frequencies. Thus, subtracting the blurred image from the pre-blurred image allows the residual to capture the high frequencies of the original image.
+
+Design Decisions:
+\subsection{Gaussian and Laplacian Pyramids}
+\begin{enumerate}
+    \item For Gaussian blurring, I used a 3x3 kernel with $\sigma = 1.0$. I chose a 3x3 kernel because it is a commonly used kernel size that can be used for Gaussian blurring. I chose $\sigma = 1.0$ because it is a standard value for Gaussian blurring.
+    \item When scaling an image dowm, I used the cv2.INTER\_LINEAR interpolation method. I chose this method because it is a commonly used method for scaling down images. Also, it is a good balance between speed and quality.
+\end{enumerate}
+
+\subsection{FFT Decisions}
+\begin{enumerate}
+    \item Explain FFT Decisions
+\end{enumerate}
+
+
+\section{Edge Detection}
+
+\subsection{Simple Gradient-Based Edge Detector}
+\begin{enumerate}
+    \item Explain decisions
+\end{enumerate}
+
+\subsection{Oriented Filters}
+\begin{enumerate}
+    \item Explain Decisions on the Angles
+\end{enumerate}
+
+\subsection{Ideas for Improvement}
+\begin{enumerate}
+    \item In class, we learned that 'Hysteresis' Thresholding is a part of Canny edge detector. It is useful in connecting disconnected edges, resulting in closed edges. Implementing this will improve the edge detection.
+    \item For part 2.2, I chose 30 and 150 degrees as the angles for the oriented filters, in addition to 0 and 90 degrees. This selection can be improved by using PCA to find the principal directions of the edges in the image. Those princpal directions can be used to generate oriented filters. This will allow for a more accurate selection of angles for the oriented filters, and can result in a more accurate edge detection.
+\end{enumerate}
 
 \end{document}
