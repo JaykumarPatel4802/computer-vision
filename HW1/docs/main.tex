@@ -160,12 +160,12 @@ Algorithm:
 Algorithm:
 \begin{itemize}
     \item First, apply the X and Y Sobel filters to the image, to get the gradient direction and magnitude for all pixels.
-    \item These directions and magnitudes can be used to plot the each pixel as a point in a 2-D space, where the x and y coordinates are the gradient magnitudes in the X and Y directions, respectively.
+    \item These directions and magnitudes can be used to plot each pixel as a point in a 2-D space, where the x and y coordinates are the gradient magnitudes in the X and Y directions, respectively.
     \item Then, use PCA to find the principal directions of the points in the 2-D space.
     \item Use the principal directions to generate oriented filters.
-    \item Finally, apply the oriented filters to the image, and compute the magnitude and theta of the gradients for each oriented filter.
+    \item Then, apply the oriented filters to the image, and compute the magnitude and theta of the gradients for each oriented filter.
     \item Then, compute the final magnitude and theta by performing vector calculus on the magnitudes and thetas of the oriented filters.
-    \item Finally, apply non-maxima suppression to the final magnitude and theta.
+    \item Finally, perform non-maxima suppression to thin the edges.
     \item Apply Hysteresis Thresholding to the non-maxima suppressed image, to connect disconnected edges.
     \item The result is the edge detection.
 \end{itemize}
@@ -175,8 +175,8 @@ Algorithm:
     \item First, suppose $n$ represents the number of oriented filters.
     \item Then, create $n$ oriented filters at different angles. These angles can be determined by dividing the 180 degrees into $n-1$ equal parts. For example, if $n=6$, then the angles would be 0, 30, 60, 90, 120, and 150 degrees.
     \item Then, apply the $n$ oriented filters to the image.
-    \item Then, compute the final magniture and theta by taking the maximum magnitude and its corresponding theta from the $n$ oriented filters.
-    \item Then, apply non-maxima suppression to the final magnitude and theta.
+    \item Then, compute the final magnitude and theta by taking the maximum magnitude and its corresponding theta from the $n$ oriented filters.
+    \item Finally, perform non-maxima suppression to thin the edges.
     \item Apply Hysteresis Thresholding to the non-maxima suppressed image, to connect disconnected edges.
     \item The result is the edge detection.
 \end{itemize}
