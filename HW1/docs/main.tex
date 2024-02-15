@@ -91,6 +91,7 @@ In essence, the Gaussian pyramid captures the low frequency components and smoot
     \item Then, I computed the magnitude for each oriented filters by computing the L2 norm of oriented filter applied to the R, G, and B channels. This results in 4 magnitude matrices, one for each oriented filter.
     \item Finally, I computed the final magnitude by taking the maximum magnitude of the 4 magnitude matrices. I did this using the $np.max$ function. The final theta matrix was computed by using the orientation associated with the maximum magnitude. I did this using the $np.argmax$ and $np.take\_along\_axis$ functions.
     \item Note: the $orientedFilterMagnitude$ takes an image and a $filter\_type\_dist$ (which is a boolean) as an input. This value is used to determined how the oriented filter is created. I have implemented 2 methods of creating the oriented filter. Essentially, $getOrientedFilterUsingDistribution$ samples a 2-D distribution at certain points, whereas $getOrientedFilterUsingCombination$ uses a combination of the X and Y Sobel filters to create the oriented filter. By default, $getOrientedFilterUsingDistribution$ is used.
+    \item Note: the degree corresponds to the direction of the gradient.
 \end{itemize}
 
 \subsection{Bank of Filters used for Problem 2.2}
@@ -98,11 +99,11 @@ In essence, the Gaussian pyramid captures the low frequency components and smoot
 
 
 \subsection{Comparison of Detected Edges in Problem 2.1 and 2.2}
-The edge detection without the non-maxima suppression look very similar for Problem 2.1 and 2.2. This makes sense since X and Y directions are sufficient to capture the gradient magnitudes, since any angle can be represented as a combination of X and Y directions. 
+The edge detection without the non-maxima suppression look very similar for Problems 2.1 and 2.2. This makes sense since X and Y directions are sufficient enough to capture the gradient magnitudes, since any angle can be represented as a combination of X and Y directions. 
 
-However the edge detection with non-maxima suppression looks different. This is because the theta matrix calculation (gradient direction calculation) is different for Problem 2.1 and 2.2, and thus, the non-maxima suppression will be different. The non-maxima suppressed image for 2.2 has thinner (and more dotted) edges than 2.1 (as shown in images below), but the edge for 2.2 is more dotted compared to 2.1. This makes sense because the theta matrix for 2.1 is calculated by combining X and Y gradients (per color channel), allowing for more angles to be represented. On the other hand, the theta for 2.2 is calculated by taking the orientation (0, 30, 90, or 150) with the highest gradient magnitude, which can result in a more limited set of angles. In other words, for 2.2, the values in the final theta matrix can only be 0, 30, 90, or 150, while for 2.1, the values can be any angle. This can result in a more limited set of angles for the non-maxima suppression for 2.2, resulting in more dotted edges as non-maxima suppression may occur at a direction different than the true direction of the gradient.
+However the edge detection with non-maxima suppression looks different. This is because there are more filters in 2.2 than 2.1. The non-maxima suppressed image for 2.2 has a thin and connected (closed) edge, whereas the non-maxima suppressed image for 2.1 has a thin, but more dotted edge. As a result, many of the edges in 2.2 are closed, in contrast to 2.1, which is sign of better edge detection. One possible explanation is that the increase in oriented filters for 2.2 (by including 30 and 150 degrees) helps the edge detector be more sensitive to edges at different orientations.
 
-In summary, the edge detection with non-maxima suppression for 2.2 shows more dotted edges compared to 2.1. On the other hand, the edge detection without non-maxima suppression looks very similar for 2.1 and 2.2.
+In summary, the edge detection with non-maxima suppression for 2.2 shows a thin and connected edge. In contrast, the edges for 2.1 have sections that are dotted and not connected. On the other hand, the edge detection without non-maxima suppression looks very similar for 2.1 and 2.2.
 
 \begin{figure}[H]
     \centering
@@ -145,11 +146,42 @@ In summary, the edge detection with non-maxima suppression for 2.2 shows more do
 
 
 \subsection{Ideas for Improvement}
+1. In class, we learned that 'Hysteresis' Thresholding is a part of Canny edge detector. It is useful in connecting disconnected edges, resulting in closed edges. Implementing this may improve the edge detection.
+
+Algorithm:
 \begin{itemize}
-    \item In class, we learned that 'Hysteresis' Thresholding is a part of Canny edge detector. It is useful in connecting disconnected edges, resulting in closed edges. Implementing this will improve the edge detection.
-    \item For part 2.2, I chose 30 and 150 degrees as the angles for the oriented filters, in addition to 0 and 90 degrees. This selection can be improved by using PCA to find the principal directions of the edges in the image. Those princpal directions can be used to generate oriented filters. This will allow for a more accurate selection of angles for the oriented filters, and can result in a more accurate edge detection.
-    \item Furthemore, using more than 4 oriented filters can improve the edge detection. Using more oriented filters can allow the edge detector to be more sensitive, potentially capturing more edges.
-    \item In Canny Edge Detector we apply a gaussian filter and then apply sobel filters. This is effectively "Derivative of Gaussian". Edge detection could be potentially improved by using a "Laplacian of Gaussian" filter, which is basically a second derivative filter. This can help creating thinner edges. However, it is important to note that the non-maxima suppression in Canny Edge Detector is designed to thin the edges, so the Laplacian of Gaussian filter may not be necessary.
+    \item Implement the same steps as Sections 2.1 and/or 2.2.
+    \item Apply Hysteresis Thresholding to the non-maxima suppressed image, to connect disconnected edges.
+    \item The result is the edge detection.
 \end{itemize}
+
+2. For part 2.2, I chose 30 and 150 degrees as the angles for the oriented filters, in addition to 0 and 90 degrees. This selection may be improved by using PCA to find the principal directions of the edges in the image. Those princpal directions can be used to generate oriented filters. This may allow for a more accurate selection of angles for the oriented filters, and may result in a more accurate edge detection.
+
+Algorithm:
+\begin{itemize}
+    \item First, apply the X and Y Sobel filters to the image, to get the gradient direction and magnitude for all pixels.
+    \item These directions and magnitudes can be used to plot the each pixel as a point in a 2-D space, where the x and y coordinates are the gradient magnitudes in the X and Y directions, respectively.
+    \item Then, use PCA to find the principal directions of the points in the 2-D space.
+    \item Use the principal directions to generate oriented filters.
+    \item Finally, apply the oriented filters to the image, and compute the magnitude and theta of the gradients for each oriented filter.
+    \item Then, compute the final magnitude and theta by performing vector calculus on the magnitudes and thetas of the oriented filters.
+    \item Finally, apply non-maxima suppression to the final magnitude and theta.
+    \item Apply Hysteresis Thresholding to the non-maxima suppressed image, to connect disconnected edges.
+    \item The result is the edge detection.
+\end{itemize}
+
+3. Furthemore, using more than 4 oriented filters may improve the edge detection. Using more oriented filters may allow the edge detector to be more sensitive to varying edge orientations, potentially capturing better edges.
+\begin{itemize}
+    \item First, suppose $n$ represents the number of oriented filters.
+    \item Then, create $n$ oriented filters at different angles. These angles can be determined by dividing the 180 degrees into $n-1$ equal parts. For example, if $n=6$, then the angles would be 0, 30, 60, 90, 120, and 150 degrees.
+    \item Then, apply the $n$ oriented filters to the image.
+    \item Then, compute the final magniture and theta by taking the maximum magnitude and its corresponding theta from the $n$ oriented filters.
+    \item Then, apply non-maxima suppression to the final magnitude and theta.
+    \item Apply Hysteresis Thresholding to the non-maxima suppressed image, to connect disconnected edges.
+    \item The result is the edge detection.
+\end{itemize}
+    
+4. In Canny Edge Detector we apply a Gaussian filter and then apply Sobel filters. This is effectively "Derivative of Gaussian". Edge detection could be potentially improved by using a "Laplacian of Gaussian" filter, which is basically a second derivative filter. This can help creating thinner edges. However, it is important to note that the non-maxima suppression in Canny Edge Detector is designed to thin the edges, so the Laplacian of Gaussian filter may not be necessary. This algorithm would look exactly like the Canny Edge Detector, but with a Laplacian of Gaussian filter instead of a Derivative of Gaussian filter.
+
 
 \end{document}
