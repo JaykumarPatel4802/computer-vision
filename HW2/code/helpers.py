@@ -65,7 +65,7 @@ def evaluate_correspondence(img_A, img_B, ground_truth_correspondence_file,
 		x2_matches[i] = x2_est_scaled[int(matches[i, 1])]
 		y2_matches[i] = y2_est_scaled[int(matches[i, 1])]
 
-	good_matches = np.zeros((matches.shape[0]), dtype=np.bool)
+	good_matches = np.zeros((matches.shape[0]), dtype=bool)
 
 	# Loads `ground truth' positions x1, y1, x2, y2
 	file_contents = scio.loadmat(ground_truth_correspondence_file)

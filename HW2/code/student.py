@@ -179,10 +179,12 @@ def get_features(image, x, y, feature_width):
 
     # TODO: Your implementation here! See block comments and the handout pdf for instructions
     print(f"Getting features for {len(x)} interest points.")
+
+    image_blurred = filters.gaussian(image, sigma=1)
     
     # STEP 1: Calculate the gradient (partial derivatives on two directions) on all pixels.
-    dx = filters.sobel_v(image)
-    dy = filters.sobel_h(image)
+    dx = filters.sobel_v(image_blurred)
+    dy = filters.sobel_h(image_blurred)
 
     # STEP 2: Decompose the gradient vectors to magnitude and direction.
     magnitude = np.sqrt(dx**2 + dy**2)
@@ -195,8 +197,6 @@ def get_features(image, x, y, feature_width):
     #         based on the direction (angle) of the gradient vectors. 
 
     features = []
-
-    ## reimplement logic by sampling the window from direction and then calculating the histogram
 
     # Iterate over keypoints
     for x_coordinate, y_coordinate in zip(x, y):
@@ -220,7 +220,6 @@ def get_features(image, x, y, feature_width):
                             continue
 
                         histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += magnitude[original_x, original_y]
-
                 histogram4x4 /= np.linalg.norm(histogram4x4)
                 histogram16x16.append(histogram4x4)
         histogram16x16 = np.array(histogram16x16).flatten()
@@ -282,12 +281,32 @@ def match_features(im1_features, im2_features):
     
     # STEP 1: Calculate the distances between each pairs of features between im1_features and im2_features.
     #         HINT: check match_features.pdf
+    # convert im1_features and im2_features to numpy arrays
+    f1 = np.array(im1_features)
+    f2 = np.array(im2_features)
+    f1_squared = np.sum(np.square(f1), axis=1).reshape(-1, 1)
+    f2_squared = np.sum(np.square(f2), axis=1).reshape(-1, 1)
+    A = f1_squared + f2_squared.T
+    B = -2 * np.dot(f1, f2.T)
+    D = np.sqrt(A + B)
     # STEP 2: Sort and find closest features for each feature, then performs NNDR test.
+
+    threshold = 10
+
+    matches = []
+    confidences = []
+    for i in range(D.shape[0]):
+        sorted_indices = np.argsort(D[i])
+        if D[i][sorted_indices[0]] / D[i][sorted_indices[1]] < threshold:
+            matches.append([i, sorted_indices[0]])
+            confidences.append(1 - D[i][sorted_indices[0]] / D[i][sorted_indices[1]])
+    matches = np.array(matches)
+    confidences = np.array(confidences)
     
     # BONUS: Using PCA might help the speed (but maybe not the accuracy).
 
-    matches = np.zeros((1,2))
-    confidences = np.zeros(1)
+    # matches = np.zeros((1,2))
+    # confidences = np.zeros(1)
 
 
     return matches, confidences
