@@ -1,0 +1,135 @@
+
+\documentclass{article}
+
+\input{structure.tex}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}   
+\usepackage{hyperref}      
+\usepackage{url}           
+\usepackage{booktabs}      
+\usepackage{amsfonts}      
+\usepackage{nicefrac}      
+\usepackage{microtype}     
+\usepackage{xcolor}        
+
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{amsmath, bm}
+\usepackage{dsfont}
+\usepackage{amssymb}
+\usepackage{multirow}
+
+\usepackage{varwidth}
+\usepackage{pifont}
+\usepackage{makecell}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{dsfont}
+\usepackage{soul}
+\usepackage[shortlabels]{enumitem}
+
+\usepackage{pythonhighlight}
+
+%----------------------------------------------------------------------------------------
+%	ASSIGNMENT INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{EE379K: Assignment \#2}
+
+
+\date{Due: Oct. 17 2022, 11:59pm TX}
+
+%----------------------------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+
+%----------------------------------------------------------------------------------------
+%	INTRODUCTION
+%----------------------------------------------------------------------------------------
+
+\section*{Introduction}
+
+The overall goal of this homework is to implement a local feature matching algorithm. You can discuss in small groups, but turn in individual solutions and indicate collaborators. Turn in assignments by \textcolor{red}{Monday, Oct. 17}. Submit to Canvas a .zip file containing  (1) a questions.pdf with answers for Part 1 questions, (2) a writeup.pdf for Part 2 code; and (3) a \texttt{code/} directory containing your code without any large result files or subfolders. The pdf can be created using latex or converting a word document to pdf or any other method you prefer, as long as it is organized and easy to read. The submission template with latex and code for this homework can be found here: \href{https://classroom.github.com/a/mCG_ijF3}{https://classroom.github.com/a/mCG\_ijF3}.
+
+
+
+\begin{info}
+	\texttt{Szeliski} refers to the second edition of \textit{Computer Vision: Algorithms and Applications}, which can be found \href{http://szeliski.org/Book/}{here}.
+\end{info}
+
+%------------------------------------------------
+
+\section{Part 1 Questions (30\%)}
+
+\subsection*{Instructions}
+
+\begin{itemize}
+    \item Three graded questions.
+    \item Write code where appropriate.
+    \item Feel free to include images or equations.
+    \item \textbf{We do NOT expect you to fill up each page with your answer.} Some answers will only be a few sentences long, and that is okay.
+  \end{itemize}
+
+
+
+
+
+
+
+
+
+
+\subsection{Q1} 
+The Harris Corner Detector is commonly used in computer vision algorithms to find interest points from which to extract stable features for image matching. 
+
+How do the eigenvalues of the `M' matrix change if we apply a low-pass filter to the image? What if we apply a high-pass filter? Describe qualitatively. 
+
+
+
+
+
+    
+
+
+
+
+
+
+
+
+\subsection{Q2} Given an interest point location, the SIFT algorithm converts a 16$\times$16 patch around the interest point into a 128$\times$1 feature descriptor of the gradient magnitudes and orientations therein. Write pseudocode \emph{with matrix/array indices} for these steps.
+
+
+\emph{Notes} Do this for just one interest point at one scale; ignore the overall interest point orientation; ignore the Gaussian weighting; ignore all normalization post-processing; ignore image boundaries; ignore sub-pixel interpolation and just pick an arbitrary center within the 16$\times$16 for your feature descriptor. Please just explain in pseudocode how to go from the 16$\times$16 patch to the 128$\times$1 vector.
+\begin{python}
+    # You can assume access to the image, x and y gradients, and their magnitudes/orientations.
+    image = imread('example.jpg')
+    grad_x = filter(image, 'sobelX')
+    grad_y = filter(image, 'sobelY')
+    grad_mag = sqrt( grad_x .^2 + grad_y.^2 )
+    grad_ori = atan2( grad_y, grad_x )
+    
+    # Takes in a interest point x,y location and returns a feature descriptor
+    def SIFTdescriptor(x, y)
+        descriptor = zeros(128,1)
+    
+    
+        return descriptor
+    \end{python}
+    
+\subsection{Q3} Distance metrics for feature matching.
+
+\begin{enumerate}[(a)]
+    \item Explain the differences between the geometric interpretations of the Euclidean distance and the cosine similarity metrics. What does this tell us about when each should be used?
+    \item Given a distance metric, what is a good method for feature descriptor matching and why?
+\end{enumerate}
+
+
+\end{document}
