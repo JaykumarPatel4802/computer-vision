@@ -196,6 +196,8 @@ def get_features(image, x, y, feature_width):
 
     features = []
 
+    ## reimplement logic by sampling the window from direction and then calculating the histogram
+
     # Iterate over keypoints
     for x_coordinate, y_coordinate in zip(x, y):
 
