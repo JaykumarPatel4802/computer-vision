@@ -219,7 +219,7 @@ def get_features(image, x, y, feature_width):
         num_rows = len(im)
         num_cols = len(im[0])
 
-        orientations = [0, np.pi/6, np.pi/2, 5*np.pi/6]
+        orientations = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2, 7*np.pi/4]
         gray_mags = []
         magnitude_array = []
         
@@ -260,6 +260,7 @@ def get_features(image, x, y, feature_width):
     # magnitude = np.sqrt(dx**2 + dy**2)
     # direction = np.arctan2(dy, dx)
 
+    # method 0, using the oriented filter
     # magnitude, direction, filter_set = orientedFilterMagnitude(image)
 
     # STEP 3: For each interest point, calculate the local histogram based on related 4x4 grid cells.
@@ -267,6 +268,7 @@ def get_features(image, x, y, feature_width):
     #         For each cell, we assign these gradient vectors corresponding to these pixels to 8 bins
     #         based on the direction (angle) of the gradient vectors. 
 
+    # Method 1: gradient calculation
     image_blurred = cv2.GaussianBlur(image, (5, 5), 1)
 
     sobel_x = np.array([[1, 0, -1], [2, 0, -2], [1, 0, -1]])
@@ -275,22 +277,41 @@ def get_features(image, x, y, feature_width):
     x_gradient = cv2.filter2D(image_blurred, -1, sobel_x)
     y_gradient = cv2.filter2D(image_blurred, -1, sobel_y)
     direction = np.arctan2(y_gradient, x_gradient)
+    direction = (direction + 2*np.pi) % (2*np.pi)
     magnitude = np.sqrt(x_gradient**2 + y_gradient**2)
+
+    # print(f"direction max: {np.max(direction)}")
+    # print(f"direction min: {np.min(direction)}")
+
+    # Method 2: gradient calculation using skimage, this performs worse for some reason
+    # image_blurred = filters.gaussian(image, sigma=1)
+    # x_gradient = filters.sobel_v(image_blurred)
+    # y_gradient = filters.sobel_h(image_blurred)
+    # direction = np.arctan2(y_gradient, x_gradient)
+    # magnitude = np.sqrt(x_gradient**2 + y_gradient**2)
+
+    print(f"all X: {x}")
+    print(f"all Y: {y}")
+
+    plt.imshow(magnitude, cmap='gray')
 
     features = []
 
     def normalize_array(arr):
-        min_val = np.min(arr)
-        max_val = np.max(arr)
-        normalized_arr = (arr - min_val) / (max_val - min_val)
+        normalized_arr = arr / np.linalg.norm(arr)
         return normalized_arr
 
+    # dirs_considered = []
+    # indices = []
 
     # Iterate over keypoints
-    for x_coordinate, y_coordinate in zip(x, y):
+    for y_coordinate, x_coordinate in zip(x, y):
 
         x_coordinate = int(x_coordinate)
         y_coordinate = int(y_coordinate)
+
+        # get the gradient vector for the center pixel
+        # center_pixel_direction = direction[x_coordinate][y_coordinate] # this shouldn't be breaking, we aren't out of the image
 
         # Compute histogram of gradients
         histogram16x16 = []
@@ -307,7 +328,10 @@ def get_features(image, x, y, feature_width):
                         if original_x < 0 or original_x >= image.shape[0] or original_y < 0 or original_y >= image.shape[1]:
                             continue
 
-                        histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += magnitude[original_x, original_y]
+                        # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += magnitude[original_x, original_y]
+                        histogram4x4[int((direction[original_x][original_y]) / (np.pi / 4))] += 1         # more accuracy as of now
+                        # dirs_considered.append(direction[original_x][original_y])
+                        # indices.append(int(direction[original_x][original_y] / (np.pi / 4)))
                         
                         # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += 1
                 # histogram4x4 /= np.linalg.norm(histogram4x4)
@@ -318,6 +342,10 @@ def get_features(image, x, y, feature_width):
         histogram16x16 = normalize_array(histogram16x16)
         features.append(histogram16x16)
 
+    # print(f"dirs considered max: {np.max(dirs_considered)}")
+    # print(f"dirs considered min: {np.min(dirs_considered)}")
+    # print(f"indices max: {np.max(indices)}")
+    # print(f"indices min: {np.min(indices)}")
 
     # STEP 4: Now for each cell, we have a 8-dimensional vector. Appending the vectors in the 4x4 cells,
     #         we have a 128-dimensional feature.
@@ -333,7 +361,20 @@ def get_features(image, x, y, feature_width):
 
     # This is a placeholder - replace this with your features!
     # features = np.zeros((len(x),128))
+    
+    # [(613.3341121495325, 72.62383177570086)]
+    # [(541.2344479004664, 142.65590979782246)]
 
+    # find index of 613.3341121495325 in x
+    # idx_x1 = np.where(x == 613.3341121495325)
+    # print(f"idx_x1: {idx_x1}")
+
+    # idx_x2 = np.where(x == 541.2344479004664)
+    # print(f"idx_x2: {idx_x2}")
+    print(f"at 3: {x[3]}, {y[3]}")
+    print(list(features[3]))
+
+    
     return features
 
 
@@ -384,19 +425,24 @@ def match_features(im1_features, im2_features):
     D = np.sqrt(A + B)
     # STEP 2: Sort and find closest features for each feature, then performs NNDR test.
 
-    threshold = 0.97
+    threshold = 0.95
+
+    # ratios = []
 
     matches = []
     confidences = []
     for i in range(D.shape[0]):
         sorted_indices = np.argsort(D[i])
         ratio = D[i][sorted_indices[0]] / D[i][sorted_indices[1]] if D[i][sorted_indices[1]] != 0 else 0
+        # ratios.append(ratio)
         if ratio < threshold:
             matches.append([i, sorted_indices[0]])
             confidences.append(1 - D[i][sorted_indices[0]] / D[i][sorted_indices[1]])
     matches = np.array(matches)
     confidences = np.array(confidences)
     
+    # print("ratios: ", ratios)
+
     # BONUS: Using PCA might help the speed (but maybe not the accuracy).
 
     # matches = np.zeros((1,2))

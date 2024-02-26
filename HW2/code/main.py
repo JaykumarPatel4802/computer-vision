@@ -144,6 +144,36 @@ def main():
 
     (x1, y1, x2, y2) = cheat_interest_points(eval_file, scale_factor)
 
+    # print(f"x1: {x1[3]}")
+    # print(f"y1: {y1[3]}")
+    # print(f"x2: {x2[3]}")        
+    # print(f"y2: {y2[3]}")
+
+    # filtered_first = []
+    # for i in range(len(x1)):
+    #     x = x1[i]
+    #     y = y1[i]
+    #     if x > 600 and x < 620 and y > 65 and y < 75:
+    #         print(f"i: {i}")
+    #         filtered_first.append((x,y))
+    #     if y > 600 and y < 620 and x > 65 and x < 75:
+    #         print(f"i: {i}")
+    #         filtered_first.append((x,y))
+    
+    # filtered_second = []
+    # for i in range(len(x2)):
+    #     x = x2[i]
+    #     y = y2[i]
+    #     if x > 535 and x < 545 and y > 135 and y < 146:
+    #         print(f"i: {i}")
+    #         filtered_second.append((x,y))
+    #     if y > 535 and y < 545 and x > 135 and x < 146:
+    #         print(f"i: {i}")
+    #         filtered_second.append((x,y))
+
+    # print(f"filtered_first: {filtered_first}")
+    # print(f"filtered_second: {filtered_second}")
+
 
     # Viewing your interest points on your images.
     # !!! You will need to implement plot_interest_points. !!!
@@ -157,7 +187,9 @@ def main():
 
     print("Getting features...")
 
+    print("features for image 1")
     image1_features = student.get_features(image1, x1, y1, feature_width)
+    print("features for image 2")
     image2_features = student.get_features(image2, x2, y2, feature_width)
 
     print("Done!")
