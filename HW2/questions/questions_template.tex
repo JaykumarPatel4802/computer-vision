@@ -23,6 +23,8 @@
 \usepackage{dsfont}
 \usepackage{amssymb}
 \usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{float}
 
 \usepackage{varwidth}
 \usepackage{pifont}
@@ -146,5 +148,104 @@ Answer:
 \textbf{Difference between Euclidean distance and cosine similarity: } The Euclidean distance measures the distance between two points in a space, while the cosine similarity measures the angle between two vectors. The Euclidean distance is sensitive to the magnitude of the vectors, while the cosine similarity is not. This means that the Euclidean distance will be large if the vectors are far apart in space and cosine similarity will be large is the direction of the vectors is vastly different. This tells us that the Euclidean distance should be used when the magnitude of the vectors is important, while the cosine similarity should be used when the direction of the vectors is important. 
 
 \textbf{Good method for feature descriptor matching: } 
+
+\section{Writeup}
+
+\subsection{Notre Dame}
+\begin{itemize}
+    \item Image 1 - Number of interest points: 338
+    \item Image 2 - Number of interest points: 291
+    \item Matches: 156
+    \item Accuracy on 50 most confident: 92\%
+    \item Accuracy on 100 most confident: 64\%
+    \item Accuracy on all matches: 50\%
+\end{itemize}
+
+\begin{figure}[H] % place the figure here if possible
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/notre_dame_figure_1_points.png} % adjust the width as needed
+    \caption{Notre Dame Image 1 Interest Points}
+    \label{fig:n_dame_1}
+\end{figure}
+
+\begin{figure}[H] % place the figure here if possible
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/notre_dame_figure_2_points.png} % adjust the width as needed
+    \caption{Notre Dame Image 2 Interest Points}
+    \label{fig:n_dame_2}
+\end{figure}
+
+\begin{figure}[H] % place the figure here if possible
+    \centering
+    \includegraphics[width=\textwidth]{images/notre_dame_matches.png} % adjust the width as needed
+    \caption{Notre Dame Matches}
+    \label{fig:n_dame_match}
+\end{figure}
+
+\subsection{Mount Rushmore}
+\begin{itemize}
+    \item Image 1 - Number of interest points: 572
+    \item Image 2 - Number of interest points: 700
+    \item Matches: 249
+    \item Accuracy on 50 most confident: 100\%
+    \item Accuracy on 100 most confident: 83\%
+    \item Accuracy on all matches: 40\%
+\end{itemize}
+
+\begin{figure}[H] % place the figure here if possible
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/mount_rushmore_figure_1_points.png} % adjust the width as needed
+    \caption{Mount Rushmore Image 1 Interest Points}
+    \label{fig:m_rushmore_1}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/mount_rushmore_figure_2_points.png} % adjust the width as needed
+    \caption{Mount Rushmore Image 2 Interest Points}
+    \label{fig:m_rushmore_2}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/mount_rushmore_matches.png} % adjust the width as needed
+    \caption{Mount Rushmore Matches}
+    \label{fig:m_rushmore_match}
+\end{figure}
+
+\subsection{Episcopal Gaudi}
+\begin{itemize}
+    \item Image 1 - Number of interest points: 173
+    \item Image 2 - Number of interest points: 543
+    \item Matches: 62
+    \item Accuracy on 50 most confident: 6\%
+    \item Accuracy on all matches: 9\%
+\end{itemize}
+
+\begin{figure}[H] % place the figure here if possible
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/episcopal_gaudi_figure_1_points.png} % adjust the width as needed
+    \caption{Episcopal Gaudi Image 1 Interest Points}
+    \label{fig:e_gaudi_1}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{images/episcopal_gaudi_figure_2_points.png} % adjust the width as needed
+    \caption{Episcopal Gaudi Image 2 Interest Points}
+    \label{fig:e_gaudi_2}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/episcopal_gaudi_matches.png} % adjust the width as needed
+    \caption{Episcopal Gaudi Matches}
+    \label{fig:e_gaudi_match}
+\end{figure}
+
+\subsection{Analysis}
+The key point match accuracy performs incredibly well on Notre Dame and Mount Rushmore, but very poorly on Episcopal Gaudi.
+
+This makes sense since Episcopal Gaudi's Figure 1 and Figure 2 differ significantly. Particularily, the Figure 2 is much more crisp and sharp. Thus the number of interest points is much higher in Figure 2 as the corners are easier to detect. Furthermore, the sizes of the images are also significantly different. Figure 1 is significantly smaller than figure 2 (compared to the relative sizes of figure 1 compared to figure 2 for Notre Dame and Mount Rushmore). I believe that multi-scale keypoint detection and multi-scale feature generation could help improve the accuracy of the matches for Episcopal Gaudi.
+
+The interest points for Notre Dame and Mount Rushmore look correct. For the Notre Dame, the corners (such at the top most right and left corners) are captured well. For Mount Rushmore, the corners of the faces (such as the nose tisp) are captured well. The matches also look correct. Something interesting is that Mount Rushmore Figure 2 has many more points than Figure 1, due to the pile of rocks in the bottom. However, these points don't get matched, which demonstrates good performance of the feature detection and matching algorithms.
+
+In class, we learned that for feature detection, we can either add a $1$ to the bins, or the $magnitude$. I noticed that when adding magnitude, the performance actually became worse. I also tried scaling the magnitude before adding it to the bin. For the scaling factor, I used a 16x16 Gaussian kernel. As a result, the points closer to the center point would contribute a higher magnitude to their respective bins, and vice versa. This also resulted in worse performance. I believe that the reason for this is that the magnitude of the gradient is not as important as the direction of the gradient for feature detection.
 
 \end{document}
