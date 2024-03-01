@@ -109,18 +109,13 @@ def get_interest_points(image, feature_width):
     # STEP 3: Calculate Harris cornerness score for all pixels. 
     alpha = 0.05
     C = (blurred_Ix2 * blurred_Iy2 - blurred_IxIy**2) - alpha * (blurred_Ix2 + blurred_Iy2)**2
-    # C_truncated = C[feature_width:-feature_width, feature_width:-feature_width]
-    C_truncated = C
 
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
-    threshold = np.percentile(C_truncated, 99)
+    threshold = np.percentile(C, 95)
     min_distance = feature_width
-    coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_rel=0.01, exclude_border=feature_width)
+    coordinates = feature.peak_local_max(C, min_distance=min_distance, threshold_rel=0.01, exclude_border=feature_width)
     # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold, exclude_border=feature_width)
     # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold)
-    # print("num coordinates: ", len(coordinates))
-    # xs = coordinates[:, 1] + feature_width
-    # ys = coordinates[:, 0] + feature_width
     xs = coordinates[:, 1] 
     ys = coordinates[:, 0]
     
@@ -234,7 +229,8 @@ def get_features(image, x, y, feature_width):
         num_rows = len(im)
         num_cols = len(im[0])
 
-        orientations = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2, 7*np.pi/4]
+        # orientations = [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi, 5*np.pi/4, 3*np.pi/2, 7*np.pi/4]
+        orientations = [0, np.pi/6, np.pi/4, np.pi/3, np.pi/2, 2*np.pi/3, 3*np.pi/4, 5*np.pi/6]
         gray_mags = []
         magnitude_array = []
         
@@ -275,7 +271,7 @@ def get_features(image, x, y, feature_width):
     # magnitude = np.sqrt(dx**2 + dy**2)
     # direction = np.arctan2(dy, dx)
 
-    # method 0, using the oriented filter
+    # method 0, using the oriented filter, this gave worse results
     # magnitude, direction, filter_set = orientedFilterMagnitude(image)
 
     # STEP 3: For each interest point, calculate the local histogram based on related 4x4 grid cells.
@@ -295,43 +291,11 @@ def get_features(image, x, y, feature_width):
     direction = (direction + 2*np.pi) % (2*np.pi)
     magnitude = np.sqrt(x_gradient**2 + y_gradient**2)
 
-    # print(f"direction max: {np.max(direction)}")
-    # print(f"direction min: {np.min(direction)}")
-
-    # Method 2: gradient calculation using skimage, this performs worse for some reason
-    # image_blurred = filters.gaussian(image, sigma=1)
-    # x_gradient = filters.sobel_v(image_blurred)
-    # y_gradient = filters.sobel_h(image_blurred)
-    # direction = np.arctan2(y_gradient, x_gradient)
-    # magnitude = np.sqrt(x_gradient**2 + y_gradient**2)
-
-    # print(f"all X: {x}")
-    # print(f"all Y: {y}")
-
-    # plt.imshow(magnitude, cmap='gray')
-
     features = []
 
     def normalize_array(arr):
         normalized_arr = arr / np.linalg.norm(arr) if np.linalg.norm(arr) != 0 else arr
         return normalized_arr
-
-    # dirs_considered = []
-    # indices = []
-
-    # def gaussian_kernel(size, sigma=1):
-    #     kernel = np.zeros((size, size))
-    #     mean = (size - 1) / 2
-    #     covariance = np.eye(2) * (sigma ** 2)
-    #     for i in range(size):
-    #         for j in range(size):
-    #             kernel[i, j] = multivariate_normal(mean=[mean, mean], cov=covariance).pdf([i, j])
-    #     return kernel / np.sum(kernel)
-
-    # kernel_size = 16
-    # sigma = 8
-    # gaussian_kernel_2d = gaussian_kernel(kernel_size, sigma)
-    # plt.imshow(gaussian_kernel_2d, cmap='gray')
 
     # Iterate over keypoints
     for y_coordinate, x_coordinate in zip(x, y):
@@ -340,7 +304,7 @@ def get_features(image, x, y, feature_width):
         y_coordinate = int(y_coordinate)
 
         # get the gradient vector for the center pixel
-        # center_pixel_direction = direction[x_coordinate][y_coordinate] # this shouldn't be breaking, we aren't out of the image
+        # center_pixel_direction = direction[x_coordinate][y_coordinate]
 
         # Compute histogram of gradients
         histogram16x16 = []
@@ -358,24 +322,14 @@ def get_features(image, x, y, feature_width):
                             continue
 
                         # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += magnitude[original_x, original_y]
-                        histogram4x4[int((direction[original_x][original_y]) / (np.pi / 4))] += 1         # more accuracy as of now
                         # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += (magnitude[original_x, original_y] * gaussian_kernel_2d[((i + 2) * 4) + k][((j + 2) * 4) + l])
-                        # dirs_considered.append(direction[original_x][original_y])
-                        # indices.append(int(direction[original_x][original_y] / (np.pi / 4)))
-                        
-                        # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += 1
-                # histogram4x4 /= np.linalg.norm(histogram4x4)
-                # histogram4x4 /= np.max(histogram4x4)
+                        histogram4x4[int((direction[original_x][original_y]) / (np.pi / 4))] += 1         # more accuracy as of now
+                
                 # histogram4x4 = normalize_array(histogram4x4)
                 histogram16x16.append(histogram4x4)
         histogram16x16 = np.array(histogram16x16).flatten()
         histogram16x16 = normalize_array(histogram16x16)
         features.append(histogram16x16)
-
-    # print(f"dirs considered max: {np.max(dirs_considered)}")
-    # print(f"dirs considered min: {np.min(dirs_considered)}")
-    # print(f"indices max: {np.max(indices)}")
-    # print(f"indices min: {np.min(indices)}")
 
     # STEP 4: Now for each cell, we have a 8-dimensional vector. Appending the vectors in the 4x4 cells,
     #         we have a 128-dimensional feature.
@@ -391,20 +345,6 @@ def get_features(image, x, y, feature_width):
 
     # This is a placeholder - replace this with your features!
     # features = np.zeros((len(x),128))
-    
-    # [(613.3341121495325, 72.62383177570086)]
-    # [(541.2344479004664, 142.65590979782246)]
-
-    # find index of 613.3341121495325 in x
-    # idx_x1 = np.where(x == 613.3341121495325)
-    # print(f"idx_x1: {idx_x1}")
-
-    # idx_x2 = np.where(x == 541.2344479004664)
-    # print(f"idx_x2: {idx_x2}")
-
-    # print(f"at 3: {x[3]}, {y[3]}")
-    # print(list(features[3]))
-
     
     return features
 
@@ -458,8 +398,6 @@ def match_features(im1_features, im2_features):
 
     threshold = 0.95
 
-    # ratios = []
-
     matches = []
     confidences = []
     for i in range(D.shape[0]):
@@ -471,8 +409,12 @@ def match_features(im1_features, im2_features):
             confidences.append(1 - D[i][sorted_indices[0]] / D[i][sorted_indices[1]])
     matches = np.array(matches)
     confidences = np.array(confidences)
-    
-    # print("ratios: ", ratios)
+
+    # sorted_indices = np.argsort(D, axis=1)
+    # ratios = D[np.arange(D.shape[0]), sorted_indices[:, 0]] / D[np.arange(D.shape[0]), sorted_indices[:, 1]]
+    # mask = ratios < threshold
+    # matches = np.column_stack((np.arange(D.shape[0])[mask], sorted_indices[:, 0][mask]))
+    # confidences = 1 - D[np.arange(D.shape[0])[mask], sorted_indices[:, 0][mask]] / D[np.arange(D.shape[0])[mask], sorted_indices[:, 1][mask]]
 
     # BONUS: Using PCA might help the speed (but maybe not the accuracy).
 
