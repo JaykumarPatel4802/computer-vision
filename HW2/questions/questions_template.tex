@@ -145,9 +145,10 @@ If we apply a low-pass filter to the image, the eigenvalues of the M matrix will
 \end{enumerate}
 
 Answer:
-\textbf{Difference between Euclidean distance and cosine similarity: } The Euclidean distance measures the distance between two points in a space, while the cosine similarity measures the angle between two vectors. The Euclidean distance is sensitive to the magnitude of the vectors, while the cosine similarity is not. This means that the Euclidean distance will be large if the vectors are far apart in space and cosine similarity will be large is the direction of the vectors is vastly different. This tells us that the Euclidean distance should be used when the magnitude of the vectors is important, while the cosine similarity should be used when the direction of the vectors is important. 
 
-\textbf{Good method for feature descriptor matching: } 
+\textbf{A: Difference between Euclidean distance and cosine similarity: } The Euclidean distance measures the distance between two points in a space, while the cosine similarity measures the angle between two vectors. The Euclidean distance is sensitive to the magnitude of the vectors, while the cosine similarity is not. This means that the Euclidean distance will be large if the vectors are far apart in space and cosine similarity will be large is the direction of the vectors is vastly different. This tells us that the Euclidean distance should be used when the magnitude of the vectors is important, while the cosine similarity should be used when the direction of the vectors is important. 
+
+\textbf{B: Good method for feature descriptor matching: } Given a distance metric, a good method for feature descriptor matching is to use the nearest neighbor algorithm. This is because the nearest neighbor algorithm is simple and efficient, and it is also very effective for high-dimensional data. The nearest neighbor algorithm will find the closest neighbors (or feature descriptor) in terms of the specified distance metric. There is a chance that a multiple feature descriptors will be close to the target feature descriptor, so the first closest neighbor may not be the best match. This can be accounted for by dividing the distance of the first closest neighbor by the distance of the second closest neighbor. If this ratio is less than a certain threshold, then the first closest neighbor is a good match. This is called the ratio test, and it is a good method for keeping matches with a high confidence level.
 
 \section{Writeup}
 
