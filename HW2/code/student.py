@@ -5,6 +5,7 @@ from skimage.measure import regionprops
 import cv2
 import scipy as sp
 from scipy.stats import multivariate_normal 
+from sklearn.decomposition import PCA
 
 """
 Next steps:
@@ -113,11 +114,13 @@ def get_interest_points(image, feature_width):
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
     threshold = np.percentile(C, 95)
     min_distance = feature_width
-    coordinates = feature.peak_local_max(C, min_distance=min_distance, threshold_rel=0.01, exclude_border=feature_width)
+    coordinates = feature.peak_local_max(C, min_distance=min_distance, threshold_rel=0.001, exclude_border=feature_width)
     # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold, exclude_border=feature_width)
     # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold)
     xs = coordinates[:, 1] 
     ys = coordinates[:, 0]
+
+    print(f"Number of interest points: {len(xs)}")
     
     # BONUS: There are some ways to improve:
     # 1. Making interest point detection multi-scaled.
@@ -345,6 +348,13 @@ def get_features(image, x, y, feature_width):
 
     # This is a placeholder - replace this with your features!
     # features = np.zeros((len(x),128))
+
+    # if usePCA: # (this did not work well at all)
+        # pca = PCA(n_components=128)
+        # features = pca.fit_transform(features)
+
+        # print(f"features shape after PCA: {features.shape}")
+
     
     return features
 
@@ -387,6 +397,7 @@ def match_features(im1_features, im2_features):
     # STEP 1: Calculate the distances between each pairs of features between im1_features and im2_features.
     #         HINT: check match_features.pdf
     # convert im1_features and im2_features to numpy arrays
+
     f1 = np.array(im1_features)
     f2 = np.array(im2_features)
     f1_squared = np.sum(np.square(f1), axis=1).reshape(-1, 1)
