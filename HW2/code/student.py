@@ -5,6 +5,15 @@ from skimage.measure import regionprops
 import cv2
 import scipy as sp
 
+"""
+Next steps:
+- Gaussian filter for the 16x16 grid
+- Rotation invariant by subtracting all directions by center point direction
+- Multiscale interest point detection
+"""
+
+
+
 def plot_interest_points(image, x, y):
     '''
     Plot interest points for the input image. 
@@ -99,15 +108,19 @@ def get_interest_points(image, feature_width):
     # STEP 3: Calculate Harris cornerness score for all pixels. 
     alpha = 0.05
     C = (blurred_Ix2 * blurred_Iy2 - blurred_IxIy**2) - alpha * (blurred_Ix2 + blurred_Iy2)**2
-    C_truncated = C[feature_width:-feature_width, feature_width:-feature_width]
+    # C_truncated = C[feature_width:-feature_width, feature_width:-feature_width]
+    C_truncated = C
 
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
-    threshold = np.percentile(C_truncated, 99.5)
+    threshold = np.percentile(C_truncated, 90)
     min_distance = 20
-    coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold)
-    print("num coordinates: ", len(coordinates))
-    xs = coordinates[:, 1] + feature_width
-    ys = coordinates[:, 0] + feature_width
+    coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold, exclude_border=feature_width)
+    # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold)
+    # print("num coordinates: ", len(coordinates))
+    # xs = coordinates[:, 1] + feature_width
+    # ys = coordinates[:, 0] + feature_width
+    xs = coordinates[:, 1] 
+    ys = coordinates[:, 0]
     
     # BONUS: There are some ways to improve:
     # 1. Making interest point detection multi-scaled.
@@ -180,7 +193,7 @@ def get_features(image, x, y, feature_width):
     '''
 
     # TODO: Your implementation here! See block comments and the handout pdf for instructions
-    print(f"Getting features for {len(x)} interest points.")
+    # print(f"Getting features for {len(x)} interest points.")
 
 
     def getOrientedFilterUsingDistribution(degree, sigma):
@@ -248,7 +261,7 @@ def get_features(image, x, y, feature_width):
         return final_mags, final_thetas, filter_set
 
 
-    print(image.dtype)
+    # print(image.dtype)
 
     # image_blurred = filters.gaussian(image, sigma=1)
     
@@ -290,15 +303,15 @@ def get_features(image, x, y, feature_width):
     # direction = np.arctan2(y_gradient, x_gradient)
     # magnitude = np.sqrt(x_gradient**2 + y_gradient**2)
 
-    print(f"all X: {x}")
-    print(f"all Y: {y}")
+    # print(f"all X: {x}")
+    # print(f"all Y: {y}")
 
-    plt.imshow(magnitude, cmap='gray')
+    # plt.imshow(magnitude, cmap='gray')
 
     features = []
 
     def normalize_array(arr):
-        normalized_arr = arr / np.linalg.norm(arr)
+        normalized_arr = arr / np.linalg.norm(arr) if np.linalg.norm(arr) != 0 else arr
         return normalized_arr
 
     # dirs_considered = []
@@ -349,7 +362,7 @@ def get_features(image, x, y, feature_width):
 
     # STEP 4: Now for each cell, we have a 8-dimensional vector. Appending the vectors in the 4x4 cells,
     #         we have a 128-dimensional feature.
-    print("features shape: ", np.array(features).shape)
+    # print("features shape: ", np.array(features).shape)
     
 
 
@@ -371,8 +384,9 @@ def get_features(image, x, y, feature_width):
 
     # idx_x2 = np.where(x == 541.2344479004664)
     # print(f"idx_x2: {idx_x2}")
-    print(f"at 3: {x[3]}, {y[3]}")
-    print(list(features[3]))
+
+    # print(f"at 3: {x[3]}, {y[3]}")
+    # print(list(features[3]))
 
     
     return features

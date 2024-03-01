@@ -142,7 +142,7 @@ def main():
     # points for mt. rushmore will not produce good results, so you'll have to use
     # your own function for that image pair.
 
-    (x1, y1, x2, y2) = cheat_interest_points(eval_file, scale_factor)
+    # (x1, y1, x2, y2) = cheat_interest_points(eval_file, scale_factor)
 
     # print(f"x1: {x1[3]}")
     # print(f"y1: {y1[3]}")
