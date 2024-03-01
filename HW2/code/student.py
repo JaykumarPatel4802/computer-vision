@@ -5,7 +5,7 @@ from skimage.measure import regionprops
 import cv2
 import scipy as sp
 from scipy.stats import multivariate_normal 
-from sklearn.decomposition import PCA
+# from sklearn.decomposition import PCA
 
 """
 Next steps:
