@@ -4,6 +4,7 @@ from skimage import filters, feature, img_as_int
 from skimage.measure import regionprops
 import cv2
 import scipy as sp
+from scipy.stats import multivariate_normal 
 
 """
 Next steps:
@@ -112,9 +113,10 @@ def get_interest_points(image, feature_width):
     C_truncated = C
 
     # STEP 4: Peak local max to eliminate clusters. (Try different parameters.)
-    threshold = np.percentile(C_truncated, 90)
-    min_distance = 20
-    coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold, exclude_border=feature_width)
+    threshold = np.percentile(C_truncated, 99)
+    min_distance = feature_width
+    coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_rel=0.01, exclude_border=feature_width)
+    # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold, exclude_border=feature_width)
     # coordinates = feature.peak_local_max(C_truncated, min_distance=min_distance, threshold_abs=threshold)
     # print("num coordinates: ", len(coordinates))
     # xs = coordinates[:, 1] + feature_width
@@ -317,6 +319,20 @@ def get_features(image, x, y, feature_width):
     # dirs_considered = []
     # indices = []
 
+    # def gaussian_kernel(size, sigma=1):
+    #     kernel = np.zeros((size, size))
+    #     mean = (size - 1) / 2
+    #     covariance = np.eye(2) * (sigma ** 2)
+    #     for i in range(size):
+    #         for j in range(size):
+    #             kernel[i, j] = multivariate_normal(mean=[mean, mean], cov=covariance).pdf([i, j])
+    #     return kernel / np.sum(kernel)
+
+    # kernel_size = 16
+    # sigma = 8
+    # gaussian_kernel_2d = gaussian_kernel(kernel_size, sigma)
+    # plt.imshow(gaussian_kernel_2d, cmap='gray')
+
     # Iterate over keypoints
     for y_coordinate, x_coordinate in zip(x, y):
 
@@ -343,13 +359,14 @@ def get_features(image, x, y, feature_width):
 
                         # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += magnitude[original_x, original_y]
                         histogram4x4[int((direction[original_x][original_y]) / (np.pi / 4))] += 1         # more accuracy as of now
+                        # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += (magnitude[original_x, original_y] * gaussian_kernel_2d[((i + 2) * 4) + k][((j + 2) * 4) + l])
                         # dirs_considered.append(direction[original_x][original_y])
                         # indices.append(int(direction[original_x][original_y] / (np.pi / 4)))
                         
                         # histogram4x4[int(direction[original_x][original_y] / (np.pi / 4))] += 1
                 # histogram4x4 /= np.linalg.norm(histogram4x4)
                 # histogram4x4 /= np.max(histogram4x4)
-                histogram4x4 = normalize_array(histogram4x4)
+                # histogram4x4 = normalize_array(histogram4x4)
                 histogram16x16.append(histogram4x4)
         histogram16x16 = np.array(histogram16x16).flatten()
         histogram16x16 = normalize_array(histogram16x16)
